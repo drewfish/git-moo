@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# Show a nice table representing the differences between
+# Draws a nice table representing the differences between
 # the local repo and remotes.
 #
 # It is assumed that there is a direct relationship between
@@ -8,8 +8,7 @@
 # TODO
 #   * marker for current branch
 #   * marker if current branch is modified
-#   * read colors from .gitconfig
-#   * show remote HEADs?
+#   * read colors from `git config --get-color`
 #
 
 
@@ -141,8 +140,8 @@ sub table_cell_format {
     if ( $cell->{'remote'} ) {
         $text = $cell->{'remote'};
         $len = length $text;
-        if ( $width ) {
-            $text = "$Cbold$text$Cend";
+        if ( $width and $text eq 'local' ) {
+            $text = "$Cbblue$text$Cend";
         }
     }
 
@@ -217,7 +216,11 @@ sub table_row_print {
 
 sub usage {
     print "USAGE:  git moo {options}\n";
-    print "Draws a table of local and remote branches and the relationships between them.\n";
+    print "Draws a nice table representing the differences between\n";
+    print "the local repo and remotes.\n";
+    print "\n";
+    print "It is assumed that there is a direct relationship between\n";
+    print "the local branch names and remote branch names.\n";
     print "\n";
     print "OPTIONS\n";
     print "    -h\n";
@@ -264,7 +267,6 @@ sub main {
         if ( $refname =~ m#^refs/remotes/([^/]+)/([^/]+)$# ) {
             my $remote = $1;
             my $branch = $2;
-            # TODO: show remote HEADs?
             next if $branch eq 'HEAD';
             $table{$branch}{$remote}{'commit'} = $commit;
             if ( $table{$branch}{'local'}{'commit'} and $table{$branch}{'local'}{'commit'} eq $table{$branch}{$remote}{'commit'} ) {
@@ -288,6 +290,7 @@ sub main {
         foreach my $branch ( keys %table ) {
             my @commits = grep { $_->{'commit'} } values %{$table{$branch}};
             my $skip = 1 if scalar(@commits) <= 1;
+            # always show local branches, even if lonely
             $skip = 0 if $table{$branch}{'local'}{'commit'};
             delete $table{$branch} if $skip;
         }
