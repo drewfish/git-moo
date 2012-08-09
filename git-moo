@@ -1,0 +1,312 @@
+#!/usr/bin/env perl
+# Show a nice table representing the differences between
+# the local repo and remotes.
+#
+# It is assumed that there is a direct relationship between
+# the local branch names and remote branch names.
+#
+# TODO
+#   * marker for current branch
+#   * marker if current branch is modified
+#   * read colors from .gitconfig
+#   * show remote HEADs?
+#
+
+
+use strict;
+use warnings;
+use Cwd;
+use Getopt::Long;
+
+
+my %OPTIONS;
+
+
+# C=color, G=graphic
+our $Cgrey  = "\e[30;1m";
+our $Cred   = "\e[31m";
+our $Cgreen = "\e[32m";
+our $Cyel   = "\e[33m";
+our $Cblue  = "\e[34m";
+our $Cbblue = "\e[34;1m";
+our $Cbold  = "\e[37;1m";
+our $Cend   = "\e[0m";
+our $Gew    = "─";  # east-west
+our $Gns    = "│";  # north-south
+our $Gnesw  = "┼";  # north-east-south-west
+our $Gtrack = "=";
+
+
+sub git_commits_abbrev {
+    my $table = shift || die;
+
+    my $len = 6;
+    while ( 1 ) {
+        my %commits;    # dedupe
+        foreach my $branch ( keys %$table ) {
+            foreach my $remote ( keys %{$table->{$branch}} ) {
+                my $commit = $table->{$branch}{$remote}{'commit'};
+                next unless $commit;
+                $commits{$commit} = 1;
+            }
+        }
+        my %abbrevs;
+        foreach my $commit ( keys %commits ) {
+            my $abbrev = substr($commit, 0, $len);
+            $abbrevs{$abbrev}++;
+        }
+        if ( grep { $_ > 1 } values %abbrevs ) {
+            $len += 3;
+            next;
+        }
+        last;
+    }
+
+    foreach my $branch ( keys %$table ) {
+        foreach my $remote ( keys %{$table->{$branch}} ) {
+            my $commit = $table->{$branch}{$remote}{'commit'};
+            next unless $commit;
+            $table->{$branch}{$remote}{'commit'} = substr($commit, 0, $len);
+        }
+    }
+}
+
+
+sub git_distance {
+    my $refa = shift || die;
+    my $refb = shift || die;
+    return undef if $refa eq $refb;
+
+    my $log = `git rev-list --left-right --count $refa...$refb`;
+    return undef unless $log =~ m/^(\d+)\s+(\d+)/;
+    return {
+        'pos' => $1,
+        'neg' => $2,
+    };
+}
+
+
+sub table_print {
+    my $table   = shift || die; # hashref row (branch) => colum (remote) => hashref details
+
+    my %colwidths;  # column => max width;
+    $colwidths{'--ROWNAMES--'} = 0;
+    foreach my $branch ( keys %$table ) {
+        next if $OPTIONS{'local-only'} and not $table->{$branch}{'local'}{'commit'};
+
+        my $text = table_cell_format({ branch => $branch });
+        my $len = length $text;
+        $colwidths{'--ROWNAMES--'} ||= 0;
+        $colwidths{'--ROWNAMES--'} = $len if $colwidths{'--ROWNAMES--'} < $len;
+
+        foreach my $remote ( keys %{$table->{$branch}} ) {
+            my $text = table_cell_format($table->{$branch}{$remote});
+            my $len = length $text;
+            $colwidths{$remote} ||= 0;
+            $colwidths{$remote} = $len if $colwidths{$remote} < $len;
+
+            $len = length $remote;
+            $colwidths{$remote} = $len if $colwidths{$remote} < $len;
+        }
+    }
+
+    # draw headers
+    my %row = map { $_ => { remote => $_ } } keys %colwidths;
+    table_row_print('--ROWNAMES--', \%row, \%colwidths);
+
+    # draw horizontal line
+    print $Cgrey, ($Gew x ($colwidths{'--ROWNAMES--'} + 2));
+    print $Gnesw, ($Gew x ($colwidths{'local'} + 2));
+    foreach my $col ( sort keys %colwidths ) {
+        next if $col eq '--ROWNAMES--';
+        next if $col eq 'local';
+        print $Gnesw, ($Gew x ($colwidths{$col} + 2));
+    }
+    print $Cend, "\n";
+
+    # draw rows
+    foreach my $branch ( sort keys %$table ) {
+        next if $OPTIONS{'local-only'} and not $table->{$branch}{'local'}{'commit'};
+        table_row_print($branch, $table->{$branch}, \%colwidths);
+    }
+}
+
+
+sub table_cell_format {
+    my $cell = shift || {};     # hashref
+    my $width = shift;          # integer, also signifies to use color
+    my $text = '';
+    my $len = 0;
+
+    if ( $cell->{'remote'} ) {
+        $text = $cell->{'remote'};
+        $len = length $text;
+        if ( $width ) {
+            $text = "$Cbold$text$Cend";
+        }
+    }
+
+    if ( $cell->{'branch'} ) {
+        $text = $cell->{'branch'};
+        $len = length $text;
+        if ( $width and $cell->{'local'} ) {
+            $text = "$Cbblue$text$Cend";
+        }
+    }
+
+    if ( $cell->{'commit'} ) {
+        $text = $cell->{'commit'};
+        $len = length $text;
+        if ( $width and $cell->{'local'} ) {
+            $text = "$Cblue$text$Cend";
+        }
+        if ( $width and $cell->{'up-to-date'} ) {
+            $text = "$Cgrey$text$Cend";
+        }
+
+        if ( $cell->{'track'} ) {
+            my $deco = $Gtrack;
+            $len += length $deco;
+            if ( $width ) {
+                $deco = "$Cblue$Gtrack$Cend";
+            }
+            $text .= $deco;
+        }
+
+        if ( $cell->{'distance'} ) {
+            my $deco = ' ';
+            $deco .= '+' . $cell->{'distance'}{'pos'} if $cell->{'distance'}{'pos'};
+            $deco .= '-' . $cell->{'distance'}{'neg'} if $cell->{'distance'}{'neg'};
+            $len += length $deco;
+            if ( $width ) {
+                $deco = ' ';
+                $deco .= "$Cgreen+" . $cell->{'distance'}{'pos'} . $Cend if $cell->{'distance'}{'pos'};
+                $deco .= "$Cred-" . $cell->{'distance'}{'neg'} . $Cend if $cell->{'distance'}{'neg'};
+            }
+            $text .= $deco;
+        }
+    }
+    my $pad = '';
+    $pad = ' ' x ($width - $len) if $width;
+    return $text . $pad;
+}
+
+
+sub table_row_print {
+    my $branch      = shift || die; # string
+    my $row         = shift || die; # hashref cols => details
+    my $colwidths   = shift || die; # hashref cols => widths
+
+    my $cell = {};
+    $cell = {
+        branch => $branch,
+        local => $row->{'local'}{'commit'},
+    } unless $branch eq '--ROWNAMES--';
+    print ' ', table_cell_format($cell, $colwidths->{'--ROWNAMES--'}), ' ';
+
+    print "$Cgrey$Gns$Cend ", table_cell_format($row->{'local'}, $colwidths->{'local'}), ' ';
+    foreach my $remote ( sort keys %$colwidths ) {
+        next if $remote eq '--ROWNAMES--';
+        next if $remote eq 'local';
+        print "$Cgrey$Gns$Cend ", table_cell_format($row->{$remote}, $colwidths->{$remote}), ' ';
+    }
+
+    print "\n";
+}
+
+
+sub usage {
+    print "USAGE:  git moo {options}\n";
+    print "Draws a table of local and remote branches and the relationships between them.\n";
+    print "\n";
+    print "OPTIONS\n";
+    print "    -h\n";
+    print "        show this help message\n";
+    print "\n";
+    print "    --local-only or -l\n";
+    print "        only show branches that exist locally\n";
+    print "\n";
+    print "    --skip-lonely-branches or -slb\n";
+    print "        don't show branches that exist in only one remote\n";
+    print "\n";
+    print "    --skip-remote {remote} or -sr {remote}\n";
+    print "        don't show the specified remote\n";
+    print "        option can be given multiple times\n";
+    print "\n";
+    exit 1;
+}
+
+
+sub main {
+    GetOptions(\%OPTIONS,
+        "help|h",
+        "local-only|l",
+        "skip-lonely-branches|slb",
+        "skip-remote|sr=s@",
+    ) or usage();
+    usage() if $OPTIONS{'help'};
+
+    my %table;  # row (branch) => column (remote) => hashref details
+
+    my $log = `git for-each-ref --format='%(refname) %(objectname) %(upstream)'`;
+    foreach my $line ( split "\n", $log ) {
+        my($refname, $commit, $upstream) = split ' ', $line;
+        if ( $refname =~ m#^refs/heads/([^/]+)$# ) {
+            my $branch = $1;
+            $table{$branch}{'local'}{'commit'} = $commit;
+            $table{$branch}{'local'}{'local'} = 1;
+            if ( $upstream =~ m#^refs/remotes/([^/]+)/\Q$branch\E$# ) {
+                my $remote = $1;
+                $table{$branch}{$remote}{'track'} = 1;
+            }
+            next;
+        }
+        if ( $refname =~ m#^refs/remotes/([^/]+)/([^/]+)$# ) {
+            my $remote = $1;
+            my $branch = $2;
+            # TODO: show remote HEADs?
+            next if $branch eq 'HEAD';
+            $table{$branch}{$remote}{'commit'} = $commit;
+            if ( $table{$branch}{'local'}{'commit'} and $table{$branch}{'local'}{'commit'} eq $table{$branch}{$remote}{'commit'} ) {
+                $table{$branch}{$remote}{'up-to-date'} = 1;
+            }
+            next;
+        }
+    }
+
+    if ( $OPTIONS{'skip-remote'} ) {
+        foreach my $branch ( keys %table ) {
+            foreach my $remote ( keys %{$table{$branch}} ) {
+                if ( grep { $_ eq $remote } @{$OPTIONS{'skip-remote'}} ) {
+                    delete $table{$branch}{$remote};
+                }
+            }
+        }
+    }
+
+    if ( $OPTIONS{'skip-lonely-branches'} ) {
+        foreach my $branch ( keys %table ) {
+            my @commits = grep { $_->{'commit'} } values %{$table{$branch}};
+            my $skip = 1 if scalar(@commits) <= 1;
+            $skip = 0 if $table{$branch}{'local'}{'commit'};
+            delete $table{$branch} if $skip;
+        }
+    }
+
+    foreach my $branch ( keys %table ) {
+        next unless $table{$branch}{'local'}{'commit'};
+        foreach my $remote ( keys %{$table{$branch}} ) {
+            next if $remote eq 'local';
+            next unless $table{$branch}{$remote}{'commit'};
+            my $distance = git_distance($table{$branch}{$remote}{'commit'}, $table{$branch}{'local'}{'commit'});
+            $table{$branch}{$remote}{'distance'} = $distance if $distance;
+        }
+    }
+
+    git_commits_abbrev(\%table);
+
+    table_print(\%table);
+}
+main();
+
+
