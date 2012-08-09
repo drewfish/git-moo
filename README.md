@@ -45,7 +45,7 @@ yahoo   git@github.com:yahoo/mojito.git (fetch)
 yahoo   git@github.com:yahoo/mojito.git (push)
 
 $ git moo
-                         │ <span style="color:#00F;font-weight:bold;">local</span>  │ drewfish │ isao       │ yahoo     
+                         │ <span class="Cbblue">local</span>  │ drewfish │ isao       │ yahoo     
 ─────────────────────────┼────────┼──────────┼────────────┼───────────
  0.3.26-pull187          │        │          │            │ b1036f    
  arrow                   │        │          │ 148a6e     │           
@@ -76,11 +76,13 @@ $ git moo
  yui36x                  │        │          │ 5f3bac     │ 5f3bac    
 </pre>
 <style>
+<!--
 .Cgrey { color: #888; }
 .Cbblue { color: #00F; font-weight: bold; }
 .Cblue { color: #00F; }
 .Cred { color: #F00; }
 .Cgreen { color: #0F0; }
+-->
 </style>
 
 
