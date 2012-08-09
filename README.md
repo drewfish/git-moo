@@ -6,6 +6,11 @@ Draws a nice table representing the differences between the local repo and remot
 It is assumed that there is a direct relationship between the local branch names and remote branch names.
 
 
+## Installation
+1. Clone this repositry.
+2. Copy or symlink `git-moo` somewhere in your `$PATH`.
+3. Start using as `git moo` or `git-moo`!
+
 
 ## Usage
 <pre>
