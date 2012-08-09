@@ -55,7 +55,6 @@ $ git moo
  develop                 │ 2fcc88 │ 2fcc88=  │ cf895f -20 │ 29e030 +9 
  dom-mojit-warning       │        │          │ 2e9520     │           
  dom-warnings-jslint     │ 45fb24 │ 45fb24   │            │           
- error-http-reasonphrase │        │          │            │           
  handlebars3             │ cad4da │          │            │           
  master                  │ 5d1785 │ 5d1785=  │ 5d1785     │ 5d1785    
  mojit-leak              │        │          │ 2dd731     │           
