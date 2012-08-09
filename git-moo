@@ -283,6 +283,8 @@ sub main {
                     delete $table{$branch}{$remote};
                 }
             }
+            my @commits = grep { $_->{'commit'} } values %{$table{$branch}};
+            delete $table{$branch} if scalar(@commits) == 0;
         }
     }
 
