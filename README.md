@@ -52,15 +52,11 @@ $ git moo
  arrowd17c56aa           │        │          │ 83bca1     │           
  build130testfix         │        │          │ fcd6fa     │           
  client-leak-regression  │        │          │ 4bfd82     │           
- custom-binder           │        │          │            │           
- devDependencies         │        │          │            │           
  develop                 │ 2fcc88 │ 2fcc88=  │ cf895f -20 │ 29e030 +9 
  dom-mojit-warning       │        │          │ 2e9520     │           
  dom-warnings-jslint     │ 45fb24 │ 45fb24   │            │           
  error-http-reasonphrase │        │          │            │           
  handlebars3             │ cad4da │          │            │           
- hb4mu                   │        │          │            │           
- jslint                  │        │          │            │           
  master                  │ 5d1785 │ 5d1785=  │ 5d1785     │ 5d1785    
  mojit-leak              │        │          │ 2dd731     │           
  mojit-leak-036          │        │          │ a33a62     │ a33a62    
@@ -68,7 +64,6 @@ $ git moo
  pr269-ymodel            │ 3eb7a7 │ 3eb7a7=  │            │           
  pull162b                │        │          │ f384f7     │           
  readmes                 │        │          │ 09a43f     │           
- runtime-server-tunnel   │        │          │            │           
  travis                  │        │          │ 3884a2     │           
  use-npm-mime            │        │          │ 88a068     │           
  usr-mw-develop          │        │          │ 1e5dd9     │           
