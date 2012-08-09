@@ -5,12 +5,6 @@
 # It is assumed that there is a direct relationship between
 # the local branch names and remote branch names.
 #
-# TODO
-#   * version numbers for this script (to help users track updates)
-#   * marker for current branch
-#   * marker if current branch is modified
-#   * use colors from `git config --get-color`
-#
 
 
 use strict;

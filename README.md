@@ -76,10 +76,3 @@ $ git moo
 </pre>
 
 
-## To Do
-* version numbers for this script (to help users track updates)
-* marker for current branch
-* marker if current branch is modified
-* use colors from `git config --get-color`
-
-
