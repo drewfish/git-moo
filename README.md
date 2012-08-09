@@ -45,7 +45,7 @@ yahoo   git@github.com:yahoo/mojito.git (fetch)
 yahoo   git@github.com:yahoo/mojito.git (push)
 
 $ git moo
-                         │ <span class="Cbblue">local</span>  │ drewfish │ isao       │ yahoo     
+                         │ local  │ drewfish │ isao       │ yahoo     
 ─────────────────────────┼────────┼──────────┼────────────┼───────────
  0.3.26-pull187          │        │          │            │ b1036f    
  arrow                   │        │          │ 148a6e     │           
@@ -54,36 +54,27 @@ $ git moo
  client-leak-regression  │        │          │ 4bfd82     │           
  custom-binder           │        │          │            │           
  devDependencies         │        │          │            │           
- <span class="Cbblue">develop</span>                 │ <span class="Cblue">2fcc88</span> │ <span class="Cgrey">2fcc88</span><span class="Cblue">=</span>  │ cf895f <span class="Cred">-20</span> │ 29e030 <span class="Cgreen">+9</span> 
+ develop                 │ 2fcc88 │ 2fcc88=  │ cf895f -20 │ 29e030 +9 
  dom-mojit-warning       │        │          │ 2e9520     │           
- <span class="Cbblue">dom-warnings-jslint</span>     │ <span class="Cblue">45fb24</span> │ <span class="Cgrey">45fb24</span>   │            │           
+ dom-warnings-jslint     │ 45fb24 │ 45fb24   │            │           
  error-http-reasonphrase │        │          │            │           
- <span class="Cbblue">handlebars3</span>             │ <span class="Cblue">cad4da</span> │          │            │           
+ handlebars3             │ cad4da │          │            │           
  hb4mu                   │        │          │            │           
  jslint                  │        │          │            │           
- <span class="Cbblue">master</span>                  │ <span class="Cblue">5d1785</span> │ <span class="Cgrey">5d1785</span><span class="Cblue">=</span>  │ <span class="Cgrey">5d1785</span>     │ <span class="Cgrey">5d1785</span>    
+ master                  │ 5d1785 │ 5d1785=  │ 5d1785     │ 5d1785    
  mojit-leak              │        │          │ 2dd731     │           
  mojit-leak-036          │        │          │ a33a62     │ a33a62    
  npm                     │        │          │ 240852     │           
- <span class="Cbblue">pr269-ymodel</span>            │ <span class="Cblue">3eb7a7</span> │ <span class="Cgrey">3eb7a7</span><span class="Cblue">=</span>  │            │           
+ pr269-ymodel            │ 3eb7a7 │ 3eb7a7=  │            │           
  pull162b                │        │          │ f384f7     │           
  readmes                 │        │          │ 09a43f     │           
  runtime-server-tunnel   │        │          │            │           
  travis                  │        │          │ 3884a2     │           
  use-npm-mime            │        │          │ 88a068     │           
  usr-mw-develop          │        │          │ 1e5dd9     │           
- <span class="Cbblue">yaf-develop</span>             │ <span class="Cblue">ca2f55</span> │ <span class="Cgrey">ca2f55</span><span class="Cblue">=</span>  │            │           
+ yaf-develop             │ ca2f55 │ ca2f55=  │            │           
  yui36x                  │        │          │ 5f3bac     │ 5f3bac    
 </pre>
-<style>
-<!--
-.Cgrey { color: #888; }
-.Cbblue { color: #00F; font-weight: bold; }
-.Cblue { color: #00F; }
-.Cred { color: #F00; }
-.Cgreen { color: #0F0; }
--->
-</style>
 
 
 ## To Do
