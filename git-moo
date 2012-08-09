@@ -8,7 +8,7 @@
 # TODO
 #   * marker for current branch
 #   * marker if current branch is modified
-#   * read colors from `git config --get-color`
+#   * use colors from `git config --get-color`
 #
 
 
